@@ -1,0 +1,74 @@
+name: React Signup Autograder (Practical 4)
+
+on: [push]
+
+jobs:
+  autograde:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # ============================
+    # ❌ HARD FAIL RULES (0 MARKS)
+    # ============================
+
+    - name: Check for node_modules
+      run: |
+        if find . -type d -name "node_modules" | grep -q .; then
+          echo "❌ ERROR: node_modules detected in repository. Submissions must exclude this folder."
+          exit 1
+        fi
+
+    - name: Check for React Imports
+      run: |
+        if ! grep -R "from 'react'" practical-4-sign-up/src; then
+          echo "❌ ERROR: React must be imported in source files (e.g., import React from 'react')."
+          exit 1
+        fi
+
+    - name: Check for JSX
+      run: |
+        if ! grep -R "<[A-Za-z]" practical-4-sign-up/src; then
+          echo "❌ ERROR: No JSX detected. HTML-only solutions are not permitted."
+          exit 1
+        fi
+
+    # ============================
+    # 🎯 SCORING SECTION
+    # ============================
+
+    - name: Initialize score
+      run: echo "SCORE=0" >> $GITHUB_ENV
+
+    - name: P4 – Environment Setup (5 Marks)
+      run: |
+        cd practical-4-sign-up
+        npm install && echo "SCORE=$((SCORE+5))" >> $GITHUB_ENV
+
+    - name: P4 – State Management (5 Marks)
+      run: |
+        if grep -R "useState" practical-4-sign-up/src; then
+          echo "SCORE=$((SCORE+5))" >> $GITHUB_ENV
+        fi
+
+    - name: P4 – Validation Logic (5 Marks)
+      run: |
+        if grep -R "@" practical-4-sign-up/src && \
+           grep -R "password" practical-4-sign-up/src && \
+           grep -R "length" practical-4-sign-up/src; then
+          echo "SCORE=$((SCORE+5))" >> $GITHUB_ENV
+        fi
+
+    - name: P4 – UI & Reset Logic (5 Marks)
+      run: |
+        if grep -R "disabled" practical-4-sign-up/src && \
+           grep -R "reset" practical-4-sign-up/src; then
+          echo "SCORE=$((SCORE+5))" >> $GITHUB_ENV
+        fi
+
+    - name: Final Result
+      run: |
+        echo "======================================"
+        echo " FINAL PRACTICAL SCORE: $SCORE / 20"
+        echo "======================================"
